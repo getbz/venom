@@ -1,0 +1,133 @@
+$(document).ready(function(){
+	window.telefono = "+34 671 457 123";
+	
+	function resizeIframe(obj) {
+		obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	}
+  
+	// Asegurarnos de que se ha cargado correctamente.
+	console.log("Core.js cargado sin problemas.");
+	
+	// Aumentar número de personas
+	function getRandomInt(min, max) {
+		return Math.floor(Math.random() * (max - min)) + min;
+	}
+	setInterval(function(){
+		var valor_actual = parseInt($("[name=numero_personas]").html());
+		var aleatorio = getRandomInt(4,8);
+		var valor_final = valor_actual+aleatorio;
+		$("[name=numero_personas]").fadeOut(function(){
+			$("[name=numero_personas]").html(valor_final).fadeIn("fast");
+		});
+	}, 4000);
+	
+	// Cambiar pasos
+	function strip(html){
+		var tmp = document.createElement("DIV");
+		tmp.innerHTML = html;
+		return tmp.textContent || tmp.innerText;
+	}
+	
+	$(document).mouseup(function (e){
+		var container = $("#paises");
+
+		if (!container.is(e.target) // if the target of the click isn't the container...
+			&& container.has(e.target).length === 0) // ... nor a descendant of the container
+		{
+			container.hide();
+		}
+	});
+
+	var txt = $(".menu-item-has-children").first().html();
+	$(".menu-item-has-children").first().html(txt+" <span style='font-size: 10px; position: relative; top:-1px; color:#444;'>&#x25BC;</span>");
+	
+	$("[name=abrir]").click(function(){
+		if($("#paises").is(":visible")){
+			$("#paises").hide();
+			console.log("Cerrar #paises click");
+		}else{
+			$("#paises").show();
+			console.log("Abrir #paises click");
+		}
+	});
+	
+	$('body').keypress(function(e){
+		if($("#paises").is(":visible")){
+			var caracter = String.fromCharCode( e.which ).toLowerCase();
+			$("#paises #pais [name=pais]").each(function(){
+				var texto = $(this).text().toLowerCase();
+				if(caracter == texto.charAt(0)){
+					console.log("Mover a "+$(this).text());
+					$("#paises").scrollTop(
+						$(this).parent().offset().top - $("#paises").offset().top + $('#paises').scrollTop()
+					);
+					return false;
+				}
+			});
+		}
+	});
+
+	var sumatorio = 0;
+	$(".sub-menu").find("li").each(function(){
+		sumatorio = sumatorio+$(this).outerHeight();
+	});	
+	$(".sub-menu").height(sumatorio);
+	
+	$("#paises #pais").click(function(){
+		$("[name=prefijo]").html($(this).find("[name=prefijo_]").html());
+		$("body").find("[name=cambiame]").remove();
+		$("[name=abrir]").prepend('<span class="flag flag-'+($(this).attr("name"))+'" name="cambiame"></span>');
+		$("#paises").hide();
+	});
+	
+	$("[name=espiar]").click(function(){
+		if($("[name=telefono]").val().length >= 1){
+			$("body").find("#shortcode").remove();
+			$("body").find(".centreado#shortcode").remove();
+			$("body").find("#bordeado2").remove();
+			$("body").find("#bordeado").remove();
+			var telefono = strip($("span[name=prefijo]").html()+" "+$("[name=telefono]").val());
+			$("[name=numero_telefono]").html(telefono);
+			console.log("Paso 1 realizado.");
+			$("[name=paso1]").fadeOut(function(){
+				$("[name=paso1]").remove();
+				$("#titulo_whatsapp").fadeOut(function(){
+					$("#titulo_whatsapp span").html("");
+					$("#titulo_whatsapp #subtitulo").html("يمكن أن تستغرق هذه العملية حوالي 10-15 ثانية");
+					$("#titulo_whatsapp").fadeIn("fast");
+				});
+				
+				// Mostrar paso 2.
+				$("[name=porcentaje]").html("0%");
+				$("#pasos div[name=1]").css("display", "block");
+				$("[name=paso2]").fadeIn("fast");
+				console.log("Paso 2 cargado.");
+				
+				var actual = 0;
+				var intervaloPasos = setInterval(function(){
+					actual = actual+1;
+					console.log("Mostrando paso número... "+actual);
+					var porcentaje = 14.2857143*actual;
+					$(".avance").css("width", porcentaje+"%");
+					$("#porcentaje").html(Math.round(porcentaje)+"%");
+					$("#pasos div[name="+actual+"]").show();
+					if(actual >= 7){
+						console.log("Completado.");
+						clearInterval(intervaloPasos);
+						setTimeout(function(){
+							$("[name=paso2]").fadeOut(function(){
+								$("#titulo_whatsapp span").html("");
+								$("#titulo_whatsapp #subtitulo").remove();
+								var lista = 
+								$("[name=lista]").html(lista);
+								$("[name=paso3]").fadeIn("fast");
+							});
+						}, 3500);
+					}
+				}, 1420);
+			});
+		}else{
+			alert("Debes introducir el número de celular / رقم الهاتف de WhatsApp a espiar");
+		}
+	});
+});
